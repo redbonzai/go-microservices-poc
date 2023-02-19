@@ -7,19 +7,21 @@ import (
 	"net/http"
 )
 
+const webPort = 4200
+
 func main() {
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		render(w, "test.page.gohtml")
+	http.HandleFunc("/", func(responseWriter http.ResponseWriter, r *http.Request) {
+		render(responseWriter, "test.page.gohtml")
 	})
 
-	fmt.Println("Starting front end service on port 80")
-	err := http.ListenAndServe(":80", nil)
+	fmt.Printf("Starting front end service on port %v\n", webPort)
+	err := http.ListenAndServe(fmt.Sprintf(": %v", webPort), nil)
 	if err != nil {
 		log.Panic(err)
 	}
 }
 
-func render(w http.ResponseWriter, t string) {
+func render(responseWriter http.ResponseWriter, t string) {
 
 	partials := []string{
 		"./cmd/web/templates/base.layout.gohtml",
@@ -36,11 +38,11 @@ func render(w http.ResponseWriter, t string) {
 
 	tmpl, err := template.ParseFiles(templateSlice...)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(responseWriter, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	if err := tmpl.Execute(w, nil); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+	if err := tmpl.Execute(responseWriter, nil); err != nil {
+		http.Error(responseWriter, err.Error(), http.StatusInternalServerError)
 	}
 }

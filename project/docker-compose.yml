@@ -1,4 +1,5 @@
 version: '3'
+
 services:
   broker-service:
     build:
@@ -10,8 +11,15 @@ services:
     deploy:
       mode: replicated
       replicas: 1
-      labels:
-        - "broker-service"
+
+  logger-service:
+    build:
+     context: ./../logger-service
+     dockerfile: ./../logger-service/logger-service.dockerfile
+    restart: always
+    deploy:
+      mode: replicated
+      replicas: 1
 
   authentication-service:
     build:
@@ -23,15 +31,15 @@ services:
     deploy:
       mode: replicated
       replicas: 1
-      labels:
-        - "authentication-service"
     environment:
-      DSN: "host=postgress port=5432 user=postgres password=postgres dbname=users sslmode=disable timezone=UTC connect_timeout=5"
+      DSN: "host=postgres port=5432 user=postgres password=password dbname=users sslmode=disable timezone=UTC connect_timeout=5"
+
 
   postgres:
-    image: 'postgres:14.2'
+    image: 'postgres:14.0'
     ports:
       - "5432:5432"
+    restart: always
     deploy:
       mode: replicated
       replicas: 1
@@ -41,9 +49,15 @@ services:
       POSTGRES_DB: users
     volumes:
       - ./db-data/postgres/:/var/lib/postgresql/data/
-volumes:
-  db-data:
-    driver: local
-    driver_opts:
-      type: none
-      device: ./db-data/
+
+  mongo:
+    image: mongo:4.2.17-bionic
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password
+      MONGO_UNITDB_DATABASE: logs
+    volumes:
+      - ./db-data/mongo/:/data/db
+

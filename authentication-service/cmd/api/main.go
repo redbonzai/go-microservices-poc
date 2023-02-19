@@ -15,16 +15,17 @@ import (
 )
 
 const webPort = "80"
+
 var counts = int64(0)
 
 type Config struct {
-	DB *sql.DB
+	DB     *sql.DB
 	Models data.Models
 }
 
 func main() {
-	log.Println("Starting authentication service on port 80")
-	//TODO: add database connection
+	log.Printf("Starting authentication service on port :%s\n", webPort)
+
 	conn := connectToDB()
 	if conn == nil {
 		log.Panic("Can't connect to database")
@@ -32,12 +33,12 @@ func main() {
 
 	//SEtUP COnfig
 	app := Config{
-		DB: conn,
+		DB:     conn,
 		Models: data.New(conn),
 	}
 
 	srv := &http.Server{
-		Addr: fmt.Sprintf(":%s", webPort),
+		Addr:    fmt.Sprintf(":%s", webPort),
 		Handler: app.routes(),
 	}
 
@@ -79,7 +80,7 @@ func connectToDB() *sql.DB {
 			return nil
 		}
 
-		log.Println("Retrying in 2 seconds")
+		log.Println("Retrying the connection in 2 seconds")
 		time.Sleep(2 * time.Second)
 		continue
 	}
